@@ -33,6 +33,11 @@ logs/
 *.log
 backend/logs/
 
+# Service PID files
+logs/*.pid
+backend/logs/*.pid
+*.pid
+
 # Database
 *.sqlite
 *.db
