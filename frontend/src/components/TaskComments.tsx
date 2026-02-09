@@ -278,6 +278,35 @@ const TaskComments: React.FC<TaskCommentsProps> = ({
     );
   }, [comments, searchQuery]);
 
+  // Transform @mentions in rendered text into styled badges
+  const renderWithMentions = (children: React.ReactNode): React.ReactNode => {
+    return React.Children.map(children, (child) => {
+      if (typeof child !== 'string') return child;
+      const mentionRegex = /@(\w+)/g;
+      const parts: React.ReactNode[] = [];
+      let lastIndex = 0;
+      let match;
+      while ((match = mentionRegex.exec(child)) !== null) {
+        if (match.index > lastIndex) {
+          parts.push(child.slice(lastIndex, match.index));
+        }
+        const username = match[1];
+        parts.push(
+          <span
+            key={`mention-${match.index}`}
+            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+          >
+            @{username}
+          </span>
+        );
+        lastIndex = mentionRegex.lastIndex;
+      }
+      if (lastIndex === 0) return child;
+      if (lastIndex < child.length) parts.push(child.slice(lastIndex));
+      return <>{parts}</>;
+    });
+  };
+
   return (
     <div className="flex h-full flex-col">
       {/* Search bar */}
@@ -383,7 +412,8 @@ const TaskComments: React.FC<TaskCommentsProps> = ({
                       remarkPlugins={[remarkGfm]}
                       className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-headings:my-1 prose-ul:my-1 prose-ol:my-1 prose-img:rounded-lg prose-img:max-w-full prose-img:my-2 prose-a:text-blue-600 dark:prose-a:text-blue-400"
                       components={{
-                        p: ({ children }) => <div className="my-1">{children}</div>,
+                        p: ({ children }) => <div className="my-1">{renderWithMentions(children)}</div>,
+                        li: ({ children, ...props }) => <li {...props}>{renderWithMentions(children)}</li>,
                         img: ({ node, ...props }) => (
                           <ImageWithFallback src={props.src || ''} alt={props.alt || ''} />
                         ),

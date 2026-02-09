@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, Plus, Trash2, GripVertical, Loader2, ListChecks, User as UserIcon, X, ChevronRight, CornerDownRight } from 'lucide-react';
+import { Check, Plus, Trash2, GripVertical, Loader2, ListChecks, User as UserIcon, X, ChevronRight, ChevronDown, CornerDownRight } from 'lucide-react';
+import Tooltip from './Tooltip';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -92,16 +93,24 @@ const AssigneePicker: React.FC<{
   );
 };
 
+const MAX_DEPTH = 2; // 0, 1, 2 = 3 levels
+const DEPTH_MARGINS = ['', 'ml-6', 'ml-12'];
+
 // Sortable Item Component
 interface SortableItemProps {
   item: TaskChecklistItem;
-  isChild: boolean;
+  depth: number;
   canEdit: boolean;
   editingId: string | null;
   editingText: string;
   submitting: boolean;
   users: User[];
-  rootItems: TaskChecklistItem[];
+  previousSibling: TaskChecklistItem | null;
+  hasChildren: boolean;
+  childCount: number;
+  completedChildCount: number;
+  isCollapsed: boolean;
+  onToggleCollapse?: (itemId: string) => void;
   onToggle: (itemId: string, completed: boolean) => void;
   onDelete: (itemId: string) => void;
   onStartEdit: (item: TaskChecklistItem) => void;
@@ -109,19 +118,24 @@ interface SortableItemProps {
   onCancelEdit: () => void;
   setEditingText: (text: string) => void;
   onAssigneeChange?: (itemId: string, userId: number | null) => void;
-  onMakeChild?: (itemId: string, parentId: string) => void;
-  onMakeRoot?: (itemId: string) => void;
+  onIndent?: (itemId: string, newParentId: string) => void;
+  onOutdent?: (itemId: string, newParentId: string | null) => void;
 }
 
 const SortableItem: React.FC<SortableItemProps> = ({
   item,
-  isChild,
+  depth,
   canEdit,
   editingId,
   editingText,
   submitting,
   users,
-  rootItems,
+  previousSibling,
+  hasChildren,
+  childCount,
+  completedChildCount,
+  isCollapsed,
+  onToggleCollapse,
   onToggle,
   onDelete,
   onStartEdit,
@@ -129,8 +143,8 @@ const SortableItem: React.FC<SortableItemProps> = ({
   onCancelEdit,
   setEditingText,
   onAssigneeChange,
-  onMakeChild,
-  onMakeRoot,
+  onIndent,
+  onOutdent,
 }) => {
   const {
     attributes,
@@ -151,84 +165,94 @@ const SortableItem: React.FC<SortableItemProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-start gap-2 rounded-lg border p-3 transition-all ${
-        isChild ? 'ml-8' : ''
+      className={`group flex rounded-lg border transition-all ${
+        DEPTH_MARGINS[depth] || ''
       } ${
         item.completed
           ? 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'
           : 'border-gray-200 bg-white hover:border-blue-200 hover:shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-800'
       }`}
     >
-      {/* Child indicator */}
-      {isChild && (
-        <CornerDownRight size={14} className="mt-1 flex-shrink-0 text-gray-300 dark:text-gray-600" />
+      {/* Drag Handle — full height left strip */}
+      {canEdit && (
+        <Tooltip content="Reorder" position="left">
+          <button
+            type="button"
+            {...attributes}
+            {...listeners}
+            className="flex flex-shrink-0 items-center justify-center w-7 cursor-grab rounded-l-lg border-r border-gray-100 text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-400 active:cursor-grabbing dark:border-gray-700 dark:text-gray-600 dark:hover:bg-gray-700/50 dark:hover:text-gray-500"
+          >
+            <GripVertical size={14} />
+          </button>
+        </Tooltip>
       )}
 
-      {/* Drag Handle */}
-      {canEdit && (
+      {/* Main content area */}
+      <div className="flex flex-1 items-start gap-2 px-2.5 py-2 min-w-0">
+        {/* Expand/collapse toggle for parent items */}
+        {hasChildren && onToggleCollapse ? (
+          <Tooltip content={isCollapsed ? `Show ${childCount} sub-items` : 'Collapse sub-items'} position="top">
+            <button
+              type="button"
+              onClick={() => onToggleCollapse(item.id)}
+              className="mt-0.5 flex-shrink-0 rounded p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+            >
+              {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+            </button>
+          </Tooltip>
+        ) : null}
+
+        {/* Checkbox */}
         <button
           type="button"
-          {...attributes}
-          {...listeners}
-          className="cursor-grab text-gray-300 opacity-0 transition-opacity hover:text-gray-400 group-hover:opacity-100 active:cursor-grabbing dark:text-gray-600 dark:hover:text-gray-500"
-          title="Reorder"
+          onClick={() => onToggle(item.id, item.completed)}
+          disabled={!canEdit}
+          className={`mt-0.5 flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded border-2 transition-all ${
+            item.completed
+              ? 'border-blue-500 bg-blue-500 text-white'
+              : 'border-gray-300 bg-white hover:border-blue-400 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-blue-500'
+          } ${!canEdit ? 'cursor-default' : 'cursor-pointer'}`}
         >
-          <GripVertical size={16} />
+          {item.completed ? <Check size={12} strokeWidth={3} /> : null}
         </button>
-      )}
 
-      {/* Checkbox */}
-      <button
-        type="button"
-        onClick={() => onToggle(item.id, item.completed)}
-        disabled={!canEdit}
-        className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition-all ${
-          item.completed
-            ? 'border-blue-500 bg-blue-500 text-white'
-            : 'border-gray-300 bg-white hover:border-blue-400 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-blue-500'
-        } ${!canEdit ? 'cursor-default' : 'cursor-pointer'}`}
-      >
-        {item.completed ? <Check size={14} strokeWidth={3} /> : null}
-      </button>
-
-      {/* Text + Assignee */}
-      <div className="min-w-0 flex-1">
-        {editingId === item.id ? (
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={editingText}
-              onChange={(e) => setEditingText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') onSaveEdit(item.id);
-                if (e.key === 'Escape') onCancelEdit();
-              }}
-              className="flex-1 rounded border border-blue-500 bg-white px-2 py-1 text-sm text-gray-900 outline-none dark:bg-gray-700 dark:text-gray-100"
-              autoFocus
-              disabled={submitting}
-            />
-            <button
-              type="button"
-              onClick={() => onSaveEdit(item.id)}
-              disabled={submitting}
-              className="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-            >
-              OK
-            </button>
-            <button
-              type="button"
-              onClick={onCancelEdit}
-              disabled={submitting}
-              className="rounded border border-gray-300 px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-            >
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
+        {/* Text + badges — text wraps, badges stay inline */}
+        <div className="min-w-0 flex-1">
+          {editingId === item.id ? (
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={editingText}
+                onChange={(e) => setEditingText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') onSaveEdit(item.id);
+                  if (e.key === 'Escape') onCancelEdit();
+                }}
+                className="flex-1 rounded border border-blue-500 bg-white px-2 py-0.5 text-sm text-gray-900 outline-none dark:bg-gray-700 dark:text-gray-100"
+                autoFocus
+                disabled={submitting}
+              />
+              <button
+                type="button"
+                onClick={() => onSaveEdit(item.id)}
+                disabled={submitting}
+                className="rounded bg-blue-600 px-2.5 py-0.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                OK
+              </button>
+              <button
+                type="button"
+                onClick={onCancelEdit}
+                disabled={submitting}
+                className="rounded border border-gray-300 px-2.5 py-0.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
             <p
               onClick={() => canEdit && onStartEdit(item)}
-              className={`text-sm ${
+              className={`text-sm leading-snug ${
                 item.completed
                   ? 'text-gray-400 line-through dark:text-gray-500'
                   : 'text-gray-900 dark:text-gray-100'
@@ -236,6 +260,12 @@ const SortableItem: React.FC<SortableItemProps> = ({
             >
               {item.text}
             </p>
+          )}
+        </div>
+
+        {/* Right side: badges + actions — always aligned right */}
+        {editingId !== item.id && (
+          <div className="flex flex-shrink-0 items-center gap-1.5 mt-0.5">
             {/* Assignee badge */}
             {onAssigneeChange && canEdit ? (
               <AssigneePicker
@@ -245,56 +275,61 @@ const SortableItem: React.FC<SortableItemProps> = ({
                 onSelect={(userId) => onAssigneeChange(item.id, userId)}
               />
             ) : item.assigned_username ? (
-              <span className="flex items-center gap-1 rounded bg-blue-50 px-1.5 py-0.5 text-[11px] text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+              <span className="flex items-center gap-1 rounded bg-blue-50 px-1.5 py-0.5 text-[11px] text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 whitespace-nowrap">
                 <UserIcon size={10} /> {item.assigned_username}
               </span>
             ) : null}
+            {/* Collapsed children count badge */}
+            {hasChildren && isCollapsed && (
+              <span className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400 whitespace-nowrap">
+                {completedChildCount}/{childCount} sub
+              </span>
+            )}
+            {/* Action buttons */}
+            {canEdit && (
+              <div className="flex items-center gap-0.5 ml-1">
+                {/* Indent button — available if depth < MAX and there's a previous sibling */}
+                {depth < MAX_DEPTH && previousSibling && onIndent && (
+                  <Tooltip content="Indent" position="top">
+                    <button
+                      type="button"
+                      onClick={() => onIndent(item.id, previousSibling.id)}
+                      disabled={submitting}
+                      className="rounded p-1 text-gray-300 transition-colors hover:bg-gray-100 hover:text-gray-500 disabled:invisible dark:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-400"
+                    >
+                      <ChevronRight size={13} />
+                    </button>
+                  </Tooltip>
+                )}
+                {/* Outdent button — available if depth > 0 */}
+                {depth > 0 && onOutdent && (
+                  <Tooltip content="Outdent" position="top">
+                    <button
+                      type="button"
+                      onClick={() => onOutdent(item.id, item.parent_id || null)}
+                      disabled={submitting}
+                      className="rounded p-1 text-gray-300 transition-colors hover:bg-gray-100 hover:text-gray-500 disabled:opacity-50 dark:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-400"
+                    >
+                      <CornerDownRight size={13} className="rotate-180" />
+                    </button>
+                  </Tooltip>
+                )}
+                {/* Delete */}
+                <Tooltip content="Delete" position="top">
+                  <button
+                    type="button"
+                    onClick={() => onDelete(item.id)}
+                    disabled={submitting}
+                    className="rounded p-1 text-gray-300 transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-50 dark:text-gray-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </Tooltip>
+              </div>
+            )}
           </div>
         )}
       </div>
-
-      {/* Indent / Unindent buttons */}
-      {canEdit && editingId !== item.id && !isChild && rootItems.length > 0 && (
-        <button
-          type="button"
-          onClick={() => {
-            // Find previous root item to make this a child of
-            const rootIdx = rootItems.findIndex(r => r.id === item.id);
-            if (rootIdx > 0 && onMakeChild) {
-              onMakeChild(item.id, rootItems[rootIdx - 1].id);
-            }
-          }}
-          disabled={submitting || rootItems.findIndex(r => r.id === item.id) === 0}
-          className="rounded-md p-1 text-gray-400 opacity-0 transition-all hover:bg-gray-100 hover:text-gray-600 group-hover:opacity-100 disabled:opacity-0 dark:hover:bg-gray-700 dark:hover:text-gray-300"
-          title="Make sub-item"
-        >
-          <ChevronRight size={14} />
-        </button>
-      )}
-      {canEdit && editingId !== item.id && isChild && onMakeRoot && (
-        <button
-          type="button"
-          onClick={() => onMakeRoot(item.id)}
-          disabled={submitting}
-          className="rounded-md p-1 text-gray-400 opacity-0 transition-all hover:bg-gray-100 hover:text-gray-600 group-hover:opacity-100 disabled:opacity-50 dark:hover:bg-gray-700 dark:hover:text-gray-300"
-          title="Move to root level"
-        >
-          <CornerDownRight size={14} className="rotate-180" />
-        </button>
-      )}
-
-      {/* Delete Button */}
-      {canEdit && editingId !== item.id && (
-        <button
-          type="button"
-          onClick={() => onDelete(item.id)}
-          disabled={submitting}
-          className="rounded-md p-1 text-gray-400 opacity-0 transition-all hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 disabled:opacity-50 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-          title="Delete"
-        >
-          <Trash2 size={14} />
-        </button>
-      )}
     </div>
   );
 };
@@ -318,6 +353,16 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [localItems, setLocalItems] = useState<TaskChecklistItem[]>(items);
   const [users, setUsers] = useState<User[]>([]);
+  const [collapsedParents, setCollapsedParents] = useState<Set<string>>(new Set());
+
+  const handleToggleCollapse = (itemId: string) => {
+    setCollapsedParents(prev => {
+      const next = new Set(prev);
+      if (next.has(itemId)) next.delete(itemId);
+      else next.add(itemId);
+      return next;
+    });
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -347,25 +392,30 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({
     setLocalItems(items);
   }, [items]);
 
-  // Build tree: root items + their children
-  const rootItems = localItems.filter(i => !i.parent_id).sort((a, b) => a.order - b.order);
+  // Build tree helpers
   const childrenOf = (parentId: string) =>
     localItems.filter(i => i.parent_id === parentId).sort((a, b) => a.order - b.order);
 
-  // Flat ordered list for rendering: parent then its children
-  const orderedItems: Array<{ item: TaskChecklistItem; isChild: boolean }> = [];
-  for (const root of rootItems) {
-    orderedItems.push({ item: root, isChild: false });
-    for (const child of childrenOf(root.id)) {
-      orderedItems.push({ item: child, isChild: true });
+  // Recursive flatten: parent → children → grandchildren, respecting collapse
+  const orderedItems: Array<{ item: TaskChecklistItem; depth: number }> = [];
+  const addItemsRecursive = (parentId: string | null, depth: number) => {
+    const items_at_level = parentId === null
+      ? localItems.filter(i => !i.parent_id).sort((a, b) => a.order - b.order)
+      : childrenOf(parentId);
+    for (const item of items_at_level) {
+      orderedItems.push({ item, depth });
+      if (!collapsedParents.has(item.id) && depth < MAX_DEPTH) {
+        addItemsRecursive(item.id, depth + 1);
+      }
     }
-  }
-  // Also include orphaned children (parent deleted) as root
-  const allChildIds = new Set(localItems.filter(i => i.parent_id).map(i => i.id));
-  const parentIds = new Set(rootItems.map(i => i.id));
+  };
+  addItemsRecursive(null, 0);
+
+  // Include orphaned items (parent deleted or beyond max depth) as root
+  const knownIds = new Set(orderedItems.map(o => o.item.id));
   for (const item of localItems) {
-    if (item.parent_id && !parentIds.has(item.parent_id)) {
-      orderedItems.push({ item, isChild: false });
+    if (!knownIds.has(item.id)) {
+      orderedItems.push({ item, depth: 0 });
     }
   }
 
@@ -463,21 +513,24 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({
     }
   };
 
-  const handleMakeChild = async (itemId: string, parentId: string) => {
+  const handleIndent = async (itemId: string, newParentId: string) => {
     if (!onUpdateParent) return;
     try {
-      await onUpdateParent(itemId, parentId);
+      await onUpdateParent(itemId, newParentId);
     } catch (err) {
-      console.error('Failed to set parent:', err);
+      console.error('Failed to indent item:', err);
     }
   };
 
-  const handleMakeRoot = async (itemId: string) => {
+  const handleOutdent = async (itemId: string, currentParentId: string | null) => {
     if (!onUpdateParent) return;
     try {
-      await onUpdateParent(itemId, null);
+      // Move item to its grandparent (parent's parent_id)
+      const parent = currentParentId ? localItems.find(i => i.id === currentParentId) : null;
+      const grandparentId = parent?.parent_id || null;
+      await onUpdateParent(itemId, grandparentId);
     } catch (err) {
-      console.error('Failed to unset parent:', err);
+      console.error('Failed to outdent item:', err);
     }
   };
 
@@ -537,28 +590,45 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({
                   strategy={verticalListSortingStrategy}
                 >
                   <div className="space-y-2">
-                    {orderedItems.map(({ item, isChild }) => (
-                      <SortableItem
-                        key={item.id}
-                        item={item}
-                        isChild={isChild}
-                        canEdit={canEdit}
-                        editingId={editingId}
-                        editingText={editingText}
-                        submitting={submitting}
-                        users={users}
-                        rootItems={rootItems}
-                        onToggle={handleToggle}
-                        onDelete={handleDelete}
-                        onStartEdit={handleStartEdit}
-                        onSaveEdit={handleSaveEdit}
-                        onCancelEdit={handleCancelEdit}
-                        setEditingText={setEditingText}
-                        onAssigneeChange={onUpdateAssignee ? handleAssigneeChange : undefined}
-                        onMakeChild={onUpdateParent ? handleMakeChild : undefined}
-                        onMakeRoot={onUpdateParent ? handleMakeRoot : undefined}
-                      />
-                    ))}
+                    {orderedItems.map(({ item, depth }, idx) => {
+                      // Find previous sibling at the same depth (for indent target)
+                      let previousSibling: TaskChecklistItem | null = null;
+                      for (let i = idx - 1; i >= 0; i--) {
+                        if (orderedItems[i].depth === depth) {
+                          previousSibling = orderedItems[i].item;
+                          break;
+                        }
+                        if (orderedItems[i].depth < depth) break;
+                      }
+                      const children = childrenOf(item.id);
+                      return (
+                        <SortableItem
+                          key={item.id}
+                          item={item}
+                          depth={depth}
+                          canEdit={canEdit}
+                          editingId={editingId}
+                          editingText={editingText}
+                          submitting={submitting}
+                          users={users}
+                          previousSibling={previousSibling}
+                          hasChildren={children.length > 0}
+                          childCount={children.length}
+                          completedChildCount={children.filter(c => c.completed).length}
+                          isCollapsed={collapsedParents.has(item.id)}
+                          onToggleCollapse={handleToggleCollapse}
+                          onToggle={handleToggle}
+                          onDelete={handleDelete}
+                          onStartEdit={handleStartEdit}
+                          onSaveEdit={handleSaveEdit}
+                          onCancelEdit={handleCancelEdit}
+                          setEditingText={setEditingText}
+                          onAssigneeChange={onUpdateAssignee ? handleAssigneeChange : undefined}
+                          onIndent={onUpdateParent ? handleIndent : undefined}
+                          onOutdent={onUpdateParent ? handleOutdent : undefined}
+                        />
+                      );
+                    })}
                   </div>
                 </SortableContext>
               </DndContext>

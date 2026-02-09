@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileEdit, Lock, Unlock, Tag, Link } from 'lucide-react';
+import Tooltip from './Tooltip';
 import MDEditor from '@uiw/react-md-editor';
 import { Document, Tag as TagType } from '../types';
 import TagSelector from './TagSelector';
@@ -131,43 +132,47 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
             {presenceUsers && presenceUsers.length > 0 && (
               <PresenceAvatars users={presenceUsers} />
             )}
-            <button
-              onClick={copyLinkToClipboard}
-              className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors flex items-center gap-2"
-              title="Copier le lien vers ce document pour le coller ailleurs"
-            >
-              <Link className="w-4 h-4" />
-              Copier le lien
-            </button>
-            <button
-              onClick={copyMarkdownToClipboard}
-              className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-              title="Copier le lien au format Markdown : 📄 [Nom](URL)"
-            >
-              Markdown
-            </button>
-            {canUnlock && onUnlock && (
+            <Tooltip content="Copy link to this document" position="bottom">
               <button
-                onClick={onUnlock}
-                className="px-3 py-2 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors flex items-center gap-2"
-                title="Retirer mon verrou"
+                onClick={copyLinkToClipboard}
+                className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors flex items-center gap-2"
               >
-                <Unlock className="w-4 h-4" />
-                Déverrouiller
+                <Link className="w-4 h-4" />
+                Copy link
               </button>
+            </Tooltip>
+            <Tooltip content="Copy as Markdown link" position="bottom">
+              <button
+                onClick={copyMarkdownToClipboard}
+                className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+              >
+                Markdown
+              </button>
+            </Tooltip>
+            {canUnlock && onUnlock && (
+              <Tooltip content="Remove my lock" position="bottom">
+                <button
+                  onClick={onUnlock}
+                  className="px-3 py-2 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors flex items-center gap-2"
+                >
+                  <Unlock className="w-4 h-4" />
+                  Unlock
+                </button>
+              </Tooltip>
             )}
-            <button
-              onClick={onEdit}
-              disabled={isLockedByOther}
-              className={`px-4 py-2 rounded flex items-center gap-2 ${isLockedByOther
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
-              title={isLockedByMe ? 'Continuer l\'édition' : isLockedByOther ? `Verrouillé par ${document.locked_by?.user_name}` : 'Éditer le document'}
-            >
-              <FileEdit size={16} />
-              {isLockedByMe ? 'Continuer' : 'Éditer'}
-            </button>
+            <Tooltip content={isLockedByMe ? 'Continue editing' : isLockedByOther ? `Locked by ${document.locked_by?.user_name}` : 'Edit document'} position="bottom">
+              <button
+                onClick={onEdit}
+                disabled={isLockedByOther}
+                className={`px-4 py-2 rounded flex items-center gap-2 ${isLockedByOther
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+              >
+                <FileEdit size={16} />
+                {isLockedByMe ? 'Continue' : 'Edit'}
+              </button>
+            </Tooltip>
           </div>
         </div>
         {document.type === 'file' && (

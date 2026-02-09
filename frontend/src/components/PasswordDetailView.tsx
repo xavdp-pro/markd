@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Copy, Edit2, Trash2, Tag, Unlock, Link } from 'lucide-react';
+import Tooltip from './Tooltip';
 import { toast } from 'react-hot-toast';
 import { PasswordDetail, Tag as TagType } from '../types';
 import TagSelector from './TagSelector';
@@ -75,47 +76,52 @@ const PasswordDetailView: React.FC<PasswordDetailViewProps> = ({
             {presenceUsers && presenceUsers.length > 0 && (
               <PresenceAvatars users={presenceUsers} />
             )}
-            <button
-              onClick={copyLinkToClipboard}
-              className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors flex items-center gap-2"
-              title="Copy link to this password for pasting in a Markdown document"
-            >
-              <Link className="w-4 h-4" />
-              Copy link
-            </button>
-            <button
-              onClick={copyMarkdownToClipboard}
-              className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-              title="Copy link as Markdown: 🔑 [Name](URL)"
-            >
-              Markdown
-            </button>
-            {canUnlock && onUnlock && (
+            <Tooltip content="Copy link to this password" position="bottom">
               <button
-                onClick={onUnlock}
-                className="px-3 py-2 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors flex items-center gap-2"
-                title="Remove my lock"
+                onClick={copyLinkToClipboard}
+                className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors flex items-center gap-2"
               >
-                <Unlock className="w-4 h-4" />
-                Unlock
+                <Link className="w-4 h-4" />
+                Copy link
               </button>
+            </Tooltip>
+            <Tooltip content="Copy as Markdown link" position="bottom">
+              <button
+                onClick={copyMarkdownToClipboard}
+                className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+              >
+                Markdown
+              </button>
+            </Tooltip>
+            {canUnlock && onUnlock && (
+              <Tooltip content="Remove my lock" position="bottom">
+                <button
+                  onClick={onUnlock}
+                  className="px-3 py-2 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors flex items-center gap-2"
+                >
+                  <Unlock className="w-4 h-4" />
+                  Unlock
+                </button>
+              </Tooltip>
             )}
             {!readOnly && (
               <div className="flex gap-2">
-                <button
-                  onClick={onEdit}
-                  className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                  title="Edit"
-                >
-                  <Edit2 className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={onDelete}
-                  className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                  title="Delete"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                <Tooltip content="Edit" position="bottom">
+                  <button
+                    onClick={onEdit}
+                    className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                  >
+                    <Edit2 className="w-5 h-5" />
+                  </button>
+                </Tooltip>
+                <Tooltip content="Delete" position="bottom">
+                  <button
+                    onClick={onDelete}
+                    className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </Tooltip>
               </div>
             )}
           </div>
@@ -134,15 +140,16 @@ const PasswordDetailView: React.FC<PasswordDetailViewProps> = ({
                 placeholder="Not set"
                 className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-gray-100"
               />
-              <button
-                type="button"
-                onClick={() => copyToClipboard(password.username || '', 'Login')}
-                disabled={!password.username}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Copy login"
-              >
-                <Copy className="w-5 h-5" />
-              </button>
+              <Tooltip content="Copy login" position="top">
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(password.username || '', 'Login')}
+                  disabled={!password.username}
+                  className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Copy className="w-5 h-5" />
+                </button>
+              </Tooltip>
             </div>
           </div>
 
@@ -181,15 +188,16 @@ const PasswordDetailView: React.FC<PasswordDetailViewProps> = ({
                   </div>
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={() => copyToClipboard(password.password || '', 'Password')}
-                disabled={!password.password}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Copy password"
-              >
-                <Copy className="w-5 h-5" />
-              </button>
+              <Tooltip content="Copy password" position="top">
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(password.password || '', 'Password')}
+                  disabled={!password.password}
+                  className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Copy className="w-5 h-5" />
+                </button>
+              </Tooltip>
             </div>
           </div>
 
@@ -205,15 +213,16 @@ const PasswordDetailView: React.FC<PasswordDetailViewProps> = ({
                 placeholder="Not set"
                 className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-gray-100"
               />
-              <button
-                type="button"
-                onClick={() => copyToClipboard(password.url || '', 'URL')}
-                disabled={!password.url}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Copy URL"
-              >
-                <Copy className="w-5 h-5" />
-              </button>
+              <Tooltip content="Copy URL" position="top">
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(password.url || '', 'URL')}
+                  disabled={!password.url}
+                  className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Copy className="w-5 h-5" />
+                </button>
+              </Tooltip>
             </div>
           </div>
 
@@ -229,15 +238,16 @@ const PasswordDetailView: React.FC<PasswordDetailViewProps> = ({
                 rows={3}
                 className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-gray-100 resize-none"
               />
-              <button
-                type="button"
-                onClick={() => copyToClipboard(password.notes || '', 'Comments')}
-                disabled={!password.notes}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-0.5"
-                title="Copy comments"
-              >
-                <Copy className="w-5 h-5" />
-              </button>
+              <Tooltip content="Copy comments" position="top">
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(password.notes || '', 'Comments')}
+                  disabled={!password.notes}
+                  className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-0.5"
+                >
+                  <Copy className="w-5 h-5" />
+                </button>
+              </Tooltip>
             </div>
           </div>
 

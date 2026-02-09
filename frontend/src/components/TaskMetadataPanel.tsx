@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Calendar, Clock, Flag, Tag, User, X, CheckCircle2, Circle, ArrowUpCircle, ArrowDownCircle, MinusCircle, AlertCircle, ChevronLeft, ChevronRight, ChevronDown, Check } from 'lucide-react';
+import Tooltip from './Tooltip';
 import { Task, TaskTag, TaskAssignee, WorkflowStep } from '../types';
 import UserMultiSelect from './UserMultiSelect';
 import TagSelector from './TagSelector';
@@ -474,8 +475,8 @@ const TaskMetadataPanel: React.FC<TaskMetadataPanelProps> = ({
   };
 
   const containerClass =
-    `flex h-full flex-col gap-6 rounded-xl border border-gray-100 bg-white p-5 shadow-sm ` +
-    `dark:border-gray-800 dark:bg-gray-900 ${className ? className : ''}`;
+    `flex h-full flex-col gap-6 overflow-y-auto rounded-xl border border-gray-100 bg-white p-5 shadow-sm ` +
+    `dark:border-gray-800 dark:bg-gray-900 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent dark:scrollbar-thumb-gray-600 ${className ? className : ''}`;
 
   return (
     <div className={containerClass}>
@@ -487,13 +488,14 @@ const TaskMetadataPanel: React.FC<TaskMetadataPanelProps> = ({
             Status
           </span>
           {onCollapse && (
-            <button
-              onClick={onCollapse}
-              className="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800 transition-colors border border-gray-200 dark:border-gray-700"
-              title="Hide metadata"
-            >
-              <ChevronLeft size={18} />
-            </button>
+            <Tooltip content="Hide metadata" position="left">
+              <button
+                onClick={onCollapse}
+                className="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800 transition-colors border border-gray-200 dark:border-gray-700"
+              >
+                <ChevronLeft size={18} />
+              </button>
+            </Tooltip>
           )}
         </div>
         <MetadataSelect
@@ -550,7 +552,7 @@ const TaskMetadataPanel: React.FC<TaskMetadataPanelProps> = ({
       </section>
 
       {/* Tags Section */}
-      <section className="flex-1">
+      <section>
         <span className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
           <Tag size={12} />
           Tags

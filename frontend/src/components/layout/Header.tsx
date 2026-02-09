@@ -1,10 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FileText, User, Settings, LogOut, Shield, Mail, FolderTree, Users, Sun, Moon, CheckSquare, Tag, Lock, ChevronDown, Folder, Network, Search } from 'lucide-react';
+import Tooltip from '../Tooltip';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSettings } from '../../contexts/SettingsContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useUnsavedChanges } from '../../contexts/UnsavedChangesContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+
+const MODULE_DESCRIPTIONS: Record<string, string> = {
+  documents: 'Create and edit Markdown documents with real-time collaboration',
+  passwords: 'Securely store and share passwords within your team',
+  files: 'Upload, organize and share files across your workspace',
+  tasks: 'Manage tasks with checklists, Kanban boards and assignments',
+  schemas: 'Design database schemas and entity-relationship diagrams',
+};
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -200,90 +209,101 @@ const Header: React.FC = () => {
           {/* Navigation Menu */}
           <nav className="flex items-center gap-1">
             {modules.documents && (
-              <button
-                onClick={() => guardedNavigate('/')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                  location.pathname === '/' 
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                <FileText size={16} />
-                Documents
-              </button>
+              <Tooltip content={MODULE_DESCRIPTIONS.documents} position="bottom">
+                <button
+                  onClick={() => guardedNavigate('/')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                    location.pathname === '/' 
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <FileText size={16} />
+                  Documents
+                </button>
+              </Tooltip>
             )}
             
             {modules.passwords && (
-              <button
-                onClick={() => guardedNavigate('/passwords')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                  location.pathname === '/passwords' 
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                <Lock size={16} />
-                Passwords
-              </button>
+              <Tooltip content={MODULE_DESCRIPTIONS.passwords} position="bottom">
+                <button
+                  onClick={() => guardedNavigate('/passwords')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                    location.pathname === '/passwords' 
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <Lock size={16} />
+                  Passwords
+                </button>
+              </Tooltip>
             )}
             
             {modules.files && (
-              <button
-                onClick={() => guardedNavigate('/files')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                  location.pathname === '/files' 
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                <Folder size={16} />
-                Files
-              </button>
+              <Tooltip content={MODULE_DESCRIPTIONS.files} position="bottom">
+                <button
+                  onClick={() => guardedNavigate('/files')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                    location.pathname === '/files' 
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <Folder size={16} />
+                  Files
+                </button>
+              </Tooltip>
             )}
             
             {modules.tasks && (
-              <button
-                onClick={() => guardedNavigate('/tasks')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                  location.pathname === '/tasks' 
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                <CheckSquare size={16} />
-                Tasks
-              </button>
+              <Tooltip content={MODULE_DESCRIPTIONS.tasks} position="bottom">
+                <button
+                  onClick={() => guardedNavigate('/tasks')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                    location.pathname === '/tasks' 
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <CheckSquare size={16} />
+                  Tasks
+                </button>
+              </Tooltip>
             )}
             
             {modules.schemas && (
-              <button
-                onClick={() => guardedNavigate('/schemas')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                  location.pathname === '/schemas' 
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                <Network size={16} />
-                Schemas
-              </button>
+              <Tooltip content={MODULE_DESCRIPTIONS.schemas} position="bottom">
+                <button
+                  onClick={() => guardedNavigate('/schemas')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                    location.pathname === '/schemas' 
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <Network size={16} />
+                  Schemas
+                </button>
+              </Tooltip>
             )}
           </nav>
         </div>
 
         <div className="flex items-center gap-3">
           {/* Dark Mode Toggle */}
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            title={isDarkMode ? 'Light mode' : 'Dark mode'}
-          >
-            {isDarkMode ? (
-              <Sun className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            ) : (
-              <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            )}
-          </button>
+          <Tooltip content={isDarkMode ? 'Light mode' : 'Dark mode'} position="bottom">
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              {isDarkMode ? (
+                <Sun className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              ) : (
+                <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              )}
+            </button>
+          </Tooltip>
 
           {/* User Menu */}
           <div className="relative" ref={menuRef}>

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { PasswordItem, Tag as TagType } from '../types';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
+import Tooltip from './Tooltip';
 import ConfirmModal from './ConfirmModal';
 import InputModal from './InputModal';
 import TagFilter from './TagFilter';
@@ -590,13 +591,14 @@ const PasswordTree: React.FC<PasswordTreeProps> = ({
             </div>
           )}
           {onCollapseSidebar && (
-            <button
-              onClick={onCollapseSidebar}
-              className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
-              title="Hide sidebar"
-            >
-              <PanelLeftClose size={16} />
-            </button>
+            <Tooltip content="Hide sidebar" position="bottom">
+              <button
+                onClick={onCollapseSidebar}
+                className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              >
+                <PanelLeftClose size={16} />
+              </button>
+            </Tooltip>
           )}
           </div>
         </div>
@@ -638,22 +640,24 @@ const PasswordTree: React.FC<PasswordTreeProps> = ({
         {/* Expand/Collapse buttons - positioned top right of the tree area */}
         {onExpandAll && onCollapseAll && (
           <div className="absolute top-[14px] right-2 z-10 flex items-center gap-1">
-            <button
-              type="button"
-              onClick={onExpandAll}
-              className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
-              title="Expand all"
-            >
-              <Maximize2 size={14} />
-            </button>
-            <button
-              type="button"
-              onClick={onCollapseAll}
-              className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
-              title="Collapse all"
-            >
-              <Minimize2 size={14} />
-            </button>
+            <Tooltip content="Expand all" position="bottom">
+              <button
+                type="button"
+                onClick={onExpandAll}
+                className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
+              >
+                <Maximize2 size={14} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Collapse all" position="bottom">
+              <button
+                type="button"
+                onClick={onCollapseAll}
+                className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
+              >
+                <Minimize2 size={14} />
+              </button>
+            </Tooltip>
           </div>
         )}
         <div className="py-2">

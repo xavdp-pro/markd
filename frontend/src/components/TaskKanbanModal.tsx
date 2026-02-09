@@ -715,13 +715,19 @@ const KanbanColumn: React.FC<{
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuDropdownRef = useRef<HTMLDivElement>(null);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Close menu on click outside
+  // Close menu/color picker on click outside
   useEffect(() => {
     if (!showMenu && !showColorPicker) return;
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const inHeader = menuRef.current?.contains(target);
+      const inDropdown = menuDropdownRef.current?.contains(target);
+      const inPicker = colorPickerRef.current?.contains(target);
+      if (!inHeader && !inDropdown && !inPicker) {
         setShowMenu(false);
         setShowColorPicker(false);
       }
@@ -780,7 +786,7 @@ const KanbanColumn: React.FC<{
 
       {/* Column menu — positioned relative to column */}
       {showMenu && (
-        <div className="absolute right-2 top-11 z-50 w-44 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div ref={menuDropdownRef} className="absolute right-2 top-11 z-50 w-44 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
           <button
             onClick={() => { setShowMenu(false); setEditName(step.name); setIsEditing(true); }}
             className="flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700/50"
@@ -805,7 +811,7 @@ const KanbanColumn: React.FC<{
 
       {/* Color picker — positioned relative to column */}
       {showColorPicker && (
-        <div className="absolute right-2 top-11 z-50 rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div ref={colorPickerRef} className="absolute right-2 top-11 z-50 rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-800">
           <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">Pick a color</p>
           <div className="grid grid-cols-4 gap-2">
             {STEP_COLORS.map((c) => (

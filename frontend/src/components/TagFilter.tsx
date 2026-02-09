@@ -235,6 +235,17 @@ const TagFilter: React.FC<TagFilterProps> = ({
               </div>
             )}
           </div>
+
+          {/* Done button to close dropdown */}
+          <div className="border-t border-gray-200 dark:border-gray-700 p-2 bg-gray-50 dark:bg-gray-900/50">
+            <button
+              type="button"
+              onClick={() => { setTagMenuOpen(false); setTagSearchQuery(''); }}
+              className="w-full rounded-lg py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
+              Done
+            </button>
+          </div>
         </div>
       )}
     </div>

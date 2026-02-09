@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { FileEdit, Link, ChevronRight, LayoutGrid } from 'lucide-react';
+import Tooltip from './Tooltip';
 import toast from 'react-hot-toast';
 import MDEditor from '@uiw/react-md-editor';
 import { Task, TaskComment, TaskTag, TaskAssignee, TaskFile, TaskChecklistItem, WorkflowStep } from '../types';
@@ -189,42 +190,46 @@ const TaskViewer: React.FC<TaskViewerProps> = ({
         
         <div className="flex items-center gap-3">
           {onKanbanView && (
-            <button
-              ref={kanbanBtnRef}
-              onClick={onKanbanView}
-              className="relative rounded-lg p-2 text-indigo-500 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 kanban-glow"
-              title="Kanban View"
-            >
-              <LayoutGrid size={20} />
-            </button>
+            <Tooltip content="Kanban View" position="bottom">
+              <button
+                ref={kanbanBtnRef}
+                onClick={onKanbanView}
+                className="relative rounded-lg p-2 text-indigo-500 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 kanban-glow"
+              >
+                <LayoutGrid size={20} />
+              </button>
+            </Tooltip>
           )}
           {presenceUsers && presenceUsers.length > 0 && (
             <PresenceAvatars users={presenceUsers} />
           )}
-          <button
-            onClick={copyLinkToClipboard}
-            className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors flex items-center gap-2"
-            title="Copy link to this task"
-          >
-            <Link className="w-4 h-4" />
-            Copy link
-          </button>
-          <button
-            onClick={copyMarkdownToClipboard}
-            className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-            title="Copy as Markdown link: ✅ [Name](URL)"
-          >
-            Markdown
-          </button>
-          {canEdit && (
+          <Tooltip content="Copy link to this task" position="bottom">
             <button
-              onClick={onEdit}
-              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all bg-blue-600 text-white shadow-sm hover:bg-blue-700 hover:shadow active:translate-y-0.5 dark:bg-blue-600 dark:hover:bg-blue-500"
-              title="Edit task"
+              onClick={copyLinkToClipboard}
+              className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors flex items-center gap-2"
             >
-              <FileEdit size={16} />
-              Edit
+              <Link className="w-4 h-4" />
+              Copy link
             </button>
+          </Tooltip>
+          <Tooltip content="Copy as Markdown link" position="bottom">
+            <button
+              onClick={copyMarkdownToClipboard}
+              className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+            >
+              Markdown
+            </button>
+          </Tooltip>
+          {canEdit && (
+            <Tooltip content="Edit task" position="bottom">
+              <button
+                onClick={onEdit}
+                className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all bg-blue-600 text-white shadow-sm hover:bg-blue-700 hover:shadow active:translate-y-0.5 dark:bg-blue-600 dark:hover:bg-blue-500"
+              >
+                <FileEdit size={16} />
+                Edit
+              </button>
+            </Tooltip>
           )}
         </div>
       </div>
@@ -284,13 +289,14 @@ const TaskViewer: React.FC<TaskViewerProps> = ({
             ))}
             {/* Collapse button when metadata is collapsed - positioned at right of tabs */}
             {isMetadataCollapsed && (
-              <button
-                onClick={() => setIsMetadataCollapsed(false)}
-                className="ml-auto flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800 transition-colors border border-gray-200 dark:border-gray-700"
-                title="Show metadata"
-              >
-                <ChevronRight size={18} />
-              </button>
+              <Tooltip content="Show metadata" position="bottom">
+                <button
+                  onClick={() => setIsMetadataCollapsed(false)}
+                  className="ml-auto flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800 transition-colors border border-gray-200 dark:border-gray-700"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </Tooltip>
             )}
           </nav>
 

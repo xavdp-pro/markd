@@ -26,6 +26,7 @@ import {
 import { Document, Tag as TagType } from '../types';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { useAuth } from '../contexts/AuthContext';
+import Tooltip from './Tooltip';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import ConfirmModal from './ConfirmModal';
@@ -833,13 +834,14 @@ const DocumentTree: React.FC<DocumentTreeProps> = ({
             </div>
           )}
           {onCollapseSidebar && (
-            <button
-              onClick={onCollapseSidebar}
-              className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
-              title="Hide sidebar"
-            >
-              <PanelLeftClose size={16} />
-            </button>
+            <Tooltip content="Hide sidebar" position="bottom">
+              <button
+                onClick={onCollapseSidebar}
+                className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              >
+                <PanelLeftClose size={16} />
+              </button>
+            </Tooltip>
           )}
           </div>
         </div>
@@ -880,22 +882,24 @@ const DocumentTree: React.FC<DocumentTreeProps> = ({
         {/* Expand/Collapse buttons - positioned top right of the tree area, aligned with tree items */}
         {onExpandAll && onCollapseAll && (
           <div className="absolute top-[14px] right-2 z-10 flex items-center gap-1">
-            <button
-              type="button"
-              onClick={onExpandAll}
-              className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm"
-              title="Développer tout l'arbre"
-            >
-              <Maximize2 size={14} />
-            </button>
-            <button
-              type="button"
-              onClick={onCollapseAll}
-              className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm"
-              title="Réduire tout l'arbre"
-            >
-              <Minimize2 size={14} />
-            </button>
+            <Tooltip content="Expand all" position="bottom">
+              <button
+                type="button"
+                onClick={onExpandAll}
+                className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm"
+              >
+                <Maximize2 size={14} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Collapse all" position="bottom">
+              <button
+                type="button"
+                onClick={onCollapseAll}
+                className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm"
+              >
+                <Minimize2 size={14} />
+              </button>
+            </Tooltip>
           </div>
         )}
         <div className="py-2">
